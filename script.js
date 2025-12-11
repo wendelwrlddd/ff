@@ -1,24 +1,18 @@
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // Scroll Reveal Animation with better thresholds
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px" // Trigger slightly before element is fully in view
-    };
+    // Force start counters immediately to ensure they work
+    const counters = document.querySelectorAll('.counter');
+    counters.forEach(counter => {
+        startCounter(counter);
+    });
 
+    // Scroll Reveal Animation (Visual only)
+    const observerOptions = {
+        threshold: 0.1
+    };
+    
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
-                
-                // Trigger counters if this is the stats section
-                if (entry.target.classList.contains('stat-card')) {
-                    const counter = entry.target.querySelector('.counter');
-                    if (counter && !counter.classList.contains('counted')) {
-                        startCounter(counter);
-                        counter.classList.add('counted');
-                    }
-                }
             }
         });
     }, observerOptions);
@@ -27,26 +21,27 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
-    // Number Counter Animation - Optimized
+    // Number Counter Animation - Optimized & Robust
     function startCounter(element) {
         const target = +element.getAttribute('data-target');
         const suffix = element.getAttribute('data-suffix') || '';
-        const duration = 2000; // 2 seconds
+        const duration = 2000; 
         
-        // Use requestAnimationFrame for smoother animation
         let startTimestamp = null;
         
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
             
-            // Easing function for "tech" feel (easeOutExpo)
-            const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            // Simple ease out
+            const easeProgress = 1 - Math.pow(1 - progress, 3);
             
             element.innerText = Math.floor(easeProgress * target).toLocaleString('pt-BR') + suffix;
             
             if (progress < 1) {
                 window.requestAnimationFrame(step);
+            } else {
+                 element.innerText = target.toLocaleString('pt-BR') + suffix; // Ensure final value is exact
             }
         };
         
